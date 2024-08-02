@@ -2,16 +2,25 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"tetris-optimizer/tetromino"
+	"tetris-optimizer/reader"
 )
 
 func main() {
-	res, err := tetromino.Tetromino()
+	if len(os.Args) != 2 {
 
+		fmt.Println("ERROR")
+		return
+		// 		fmt.Fprintf(os.Stderr, `provide an argument
+		// Usage: go run . sample.txt | cat -e`)
+		// 		fmt.Println()
+		// 		os.Exit(0)
+	}
+
+	tetrominoes, err := reader.ReadTetrominoes(os.Args[1])
 	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(res)
+		fmt.Println("Error")
+		return
 	}
 }
