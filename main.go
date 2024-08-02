@@ -7,11 +7,9 @@ import (
 )
 
 func main() {
-	res, err := tetromino.Tetromino()
-
-	if err != nil {
-		fmt.Println(err)
+	if !tetromino.Tetromino() {
+		fmt.Println("ERROR")
 	} else {
-		fmt.Println(res)
+		fmt.Println("SUCCESS")
 	}
 }
