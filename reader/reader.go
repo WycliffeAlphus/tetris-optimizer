@@ -7,7 +7,7 @@ import (
 )
 
 type Tetro struct {
-	shape [4][4]rune
+	Shape [4][4]rune
 }
 
 var t Tetro
@@ -42,7 +42,7 @@ func ReadTetrominoes(path string) ([]Tetro, error) {
 				if lines[i][j] == '#' {
 					hashCount++
 				}
-				t.shape[i][j] = rune(lines[i][j])
+				t.Shape[i][j] = rune(lines[i][j])
 			}
 		}
 
@@ -64,17 +64,17 @@ func isValidTetromino(t Tetro) bool {
 	touchingSides := 0
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 4; j++ {
-			if t.shape[i][j] == '#' {
-				if i > 0 && t.shape[i-1][j] == '#' {
+			if t.Shape[i][j] == '#' {
+				if i > 0 && t.Shape[i-1][j] == '#' {
 					touchingSides++
 				}
-				if i < 3 && t.shape[i+1][j] == '#' {
+				if i < 3 && t.Shape[i+1][j] == '#' {
 					touchingSides++
 				}
-				if j > 0 && t.shape[i][j-1] == '#' {
+				if j > 0 && t.Shape[i][j-1] == '#' {
 					touchingSides++
 				}
-				if j < 3 && t.shape[i][j+1] == '#' {
+				if j < 3 && t.Shape[i][j+1] == '#' {
 					touchingSides++
 				}
 			}
