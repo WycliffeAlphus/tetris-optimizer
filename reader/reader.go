@@ -7,10 +7,10 @@ import (
 )
 
 type Tetro struct {
-	Shape [4][4]rune
+	Shape  [4][4]rune
+	Width  int
+	Height int
 }
-
-var t Tetro
 
 func ReadTetrominoes(path string) ([]Tetro, error) {
 	file, err := os.ReadFile(path)
@@ -18,46 +18,73 @@ func ReadTetrominoes(path string) ([]Tetro, error) {
 		return nil, err
 	}
 
-	// Split the file content by double newline to separate tetrominoes
 	tetrominoes := strings.Split(strings.TrimSpace(string(file)), "\n\n")
+	result := make([]Tetro, 0, len(tetrominoes))
 
 	for _, tString := range tetrominoes {
 		lines := strings.Split(strings.TrimSpace(tString), "\n")
-
-		// Check the number of lines for each tetromino
 		if len(lines) != 4 {
-			return nil, fmt.Errorf("ERROR")
+			return nil, fmt.Errorf("tetromino must have 4 lines, found %d", len(lines))
 		}
 
-		var hashCount int
-		for i := 0; i < 4; i++ {
-			if len(lines[i]) != 4 {
-				return nil, fmt.Errorf("ERROR")
+		t := Tetro{}
+		hashCount := 0
+
+		for i, line := range lines {
+			if len(line) != 4 {
+				return nil, fmt.Errorf("each line must have 4 characters, found %d", len(line))
 			}
-			// Check the number of hashes
-			for j := 0; j < 4; j++ {
-				if lines[i][j] != '#' && lines[i][j] != '.' {
-					return nil, fmt.Errorf("ERROR")
+
+			for j, char := range line {
+				if char != '#' && char != '.' {
+					return nil, fmt.Errorf("invalid character found: %c", char)
 				}
-				if lines[i][j] == '#' {
+				if char == '#' {
 					hashCount++
 				}
-				t.Shape[i][j] = rune(lines[i][j])
+				t.Shape[i][j] = char
 			}
 		}
 
 		if hashCount != 4 {
-			return nil, fmt.Errorf("ERROR")
+			return nil, fmt.Errorf("tetromino must have exactly 4 '#' characters, found %d", hashCount)
 		}
 
-		// Check number of touching sides
 		if !isValidTetromino(t) {
-			return nil, fmt.Errorf("ERROR")
+			return nil, fmt.Errorf("tetromino does not have enough touching sides")
+		}
+
+		t = trimTetromino(t)
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
+func trimTetromino(t Tetro) Tetro {
+	minRow, minCol := 4, 4
+	maxRow, maxCol := -1, -1
+
+	for i, row := range t.Shape {
+		for j, cell := range row {
+			if cell == '#' {
+				minRow = min(minRow, i)
+				maxRow = max(maxRow, i)
+				minCol = min(minCol, j)
+				maxCol = max(maxCol, j)
+			}
 		}
 	}
-	var tetromino []Tetro
-	tetromino = append(tetromino, t)
-	return tetromino, nil
+
+	var trimmed Tetro
+	for i := minRow; i <= maxRow; i++ {
+		for j := minCol; j <= maxCol; j++ {
+			trimmed.Shape[i-minRow][j-minCol] = t.Shape[i][j]
+		}
+	}
+	trimmed.Width = maxCol - minCol + 1
+	trimmed.Height = maxRow - minRow + 1
+	return trimmed
 }
 
 func isValidTetromino(t Tetro) bool {
@@ -65,20 +92,35 @@ func isValidTetromino(t Tetro) bool {
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 4; j++ {
 			if t.Shape[i][j] == '#' {
-				if i > 0 && t.Shape[i-1][j] == '#' {
-					touchingSides++
-				}
-				if i < 3 && t.Shape[i+1][j] == '#' {
-					touchingSides++
-				}
-				if j > 0 && t.Shape[i][j-1] == '#' {
-					touchingSides++
-				}
-				if j < 3 && t.Shape[i][j+1] == '#' {
-					touchingSides++
-				}
+				touchingSides += countTouchingSides(t, i, j)
 			}
 		}
 	}
 	return touchingSides >= 6
+}
+
+func countTouchingSides(t Tetro, i, j int) int {
+	count := 0
+	directions := [][2]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+	for _, dir := range directions {
+		newI, newJ := i+dir[0], j+dir[1]
+		if newI >= 0 && newI < 4 && newJ >= 0 && newJ < 4 && t.Shape[newI][newJ] == '#' {
+			count++
+		}
+	}
+	return count
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
