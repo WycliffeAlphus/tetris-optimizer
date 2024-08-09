@@ -24,7 +24,7 @@ func ReadTetrominoes(path string) ([]Tetro, error) {
 	for _, tString := range tetrominoes {
 		lines := strings.Split(strings.TrimSpace(tString), "\n")
 		if len(lines) != 4 {
-			return nil, fmt.Errorf("tetromino must have 4 lines, found %d", len(lines))
+			return nil, fmt.Errorf("ERROR")
 		}
 
 		t := Tetro{}
@@ -32,12 +32,12 @@ func ReadTetrominoes(path string) ([]Tetro, error) {
 
 		for i, line := range lines {
 			if len(line) != 4 {
-				return nil, fmt.Errorf("each line must have 4 characters, found %d", len(line))
+				return nil, fmt.Errorf("ERROR")
 			}
 
 			for j, char := range line {
 				if char != '#' && char != '.' {
-					return nil, fmt.Errorf("invalid character found: %c", char)
+					return nil, fmt.Errorf("ERROR")
 				}
 				if char == '#' {
 					hashCount++
@@ -47,11 +47,11 @@ func ReadTetrominoes(path string) ([]Tetro, error) {
 		}
 
 		if hashCount != 4 {
-			return nil, fmt.Errorf("tetromino must have exactly 4 '#' characters, found %d", hashCount)
+			return nil, fmt.Errorf("ERROR")
 		}
 
 		if !isValidTetromino(t) {
-			return nil, fmt.Errorf("tetromino does not have enough touching sides")
+			return nil, fmt.Errorf("ERROR")
 		}
 
 		t = trimTetromino(t)
