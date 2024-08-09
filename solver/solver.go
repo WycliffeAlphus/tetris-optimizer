@@ -1,99 +1,103 @@
 package solver
 
 import (
-	"fmt"
 	"math"
 
 	"tetris-optimizer/reader"
 )
 
-// tetrominoesAssembler tries to place the tetrominoes on the smallest square
-func TetrominoesAssembler(tetrominoes []reader.Tetro) ([][]rune, error) {
-	n := len(tetrominoes)
+type Board struct {
+	cells []rune
+	size  int
+}
 
-	initialSize := int(math.Ceil(math.Sqrt(float64(n * 4))))
+func newBoard(size int) *Board {
+	cells := make([]rune, size*size)
+	for i := range cells {
+		cells[i] = '.'
+	}
+	return &Board{
+		cells: cells,
+		size:  size,
+	}
+}
 
-	for currentSize := initialSize; ; currentSize++ {
-		board := createBoard(currentSize)
-		if solve(board, tetrominoes, 0, currentSize) {
-			return board, nil
+func (b *Board) get(x, y int) rune {
+	return b.cells[y*b.size+x]
+}
+
+func (b *Board) set(x, y int, value rune) {
+	b.cells[y*b.size+x] = value
+}
+
+func TetrominoesAssembler(tetrominoes []reader.Tetro) [][]rune {
+	totalCells := len(tetrominoes) * 4
+	minSize := int(math.Ceil(math.Sqrt(float64(totalCells))))
+
+	for size := minSize; ; size++ {
+		board := newBoard(size)
+		if solve(board, tetrominoes, 0) {
+			return boardToRuneSlice(board)
 		}
 	}
 }
 
-// createBoard helps in initializing a board of a given size
-func createBoard(size int) [][]rune {
-	currentBoard := make([][]rune, size)
-	for i := range currentBoard {
-		currentBoard[i] = make([]rune, size)
-		for j := range currentBoard[i] {
-			currentBoard[i][j] = '.'
-		}
-	}
-	return currentBoard
-}
-
-// solve uses recursion to try and place the tetriminoes on the board
-func solve(board [][]rune, tetrominoes []reader.Tetro, index, size int) bool {
+func solve(board *Board, tetrominoes []reader.Tetro, index int) bool {
 	if index == len(tetrominoes) {
 		return true
 	}
 
-	for i := 0; i <= size-4; i++ {
-		for j := 0; j <= size-4; j++ {
-			if canPlace(board, tetrominoes[index], i, j, size) {
-				place(board, tetrominoes[index], i, j, rune('A'+index))
-				if solve(board, tetrominoes, index+1, size) {
+	tetro := tetrominoes[index]
+	letter := rune('A' + index)
+
+	for y := 0; y <= board.size-tetro.Height; y++ {
+		for x := 0; x <= board.size-tetro.Width; x++ {
+			if canPlace(board, tetro, x, y) {
+				place(board, tetro, x, y, letter)
+				if solve(board, tetrominoes, index+1) {
 					return true
 				}
-				remove(board, tetrominoes[index], i, j)
+				place(board, tetro, x, y, '.') // backtrack
 			}
 		}
 	}
 	return false
 }
 
-// canPlace checks if a tetromino can be placed at the given position
-func canPlace(board [][]rune, t reader.Tetro, x, y, size int) bool {
-	for i := 0; i < 4; i++ {
-		for j := 0; j < 4; j++ {
-			if t.Shape[i][j] == '#' {
-				if x+i >= size || y+j >= size || board[x+i][y+j] != '.' {
-					return false
-				}
+func canPlace(board *Board, tetro reader.Tetro, x, y int) bool {
+	for i := 0; i < tetro.Height; i++ {
+		for j := 0; j < tetro.Width; j++ {
+			if tetro.Shape[i][j] == '#' && board.get(x+j, y+i) != '.' {
+				return false
 			}
 		}
 	}
 	return true
 }
 
-// place puts a tetromino on the board at the given position
-func place(board [][]rune, t reader.Tetro, x, y int, letter rune) {
-	for i := 0; i < 4; i++ {
-		for j := 0; j < 4; j++ {
-			if t.Shape[i][j] == '#' {
-				board[x+i][y+j] = letter
+func place(board *Board, tetro reader.Tetro, x, y int, letter rune) {
+	for i := 0; i < tetro.Height; i++ {
+		for j := 0; j < tetro.Width; j++ {
+			if tetro.Shape[i][j] == '#' {
+				board.set(x+j, y+i, letter)
 			}
 		}
 	}
 }
 
-// remove clears a tetromino from the board incase of unsuccessful placement
-func remove(board [][]rune, t reader.Tetro, x, y int) {
-	for i := 0; i < 4; i++ {
-		for j := 0; j < 4; j++ {
-			if t.Shape[i][j] == '#' {
-				board[x+i][y+j] = '.'
-			}
+func boardToRuneSlice(board *Board) [][]rune {
+	result := make([][]rune, board.size)
+	for i := range result {
+		result[i] = make([]rune, board.size)
+		for j := range result[i] {
+			result[i][j] = board.get(j, i)
 		}
 	}
+	return result
 }
 
 func PrintSolution(board [][]rune) {
 	for _, row := range board {
-		for _, cell := range row {
-			fmt.Printf("%c", cell)
-		}
+		println(string(row))
 	}
-	fmt.Println()
 }
