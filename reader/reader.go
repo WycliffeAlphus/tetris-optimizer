@@ -1,6 +1,7 @@
 package reader
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -14,6 +15,36 @@ type Tetro struct {
 
 // ReadTetrominoes checks a file with a tetrominoes and returns an array of tetros
 func ReadTetrominoes(path string) ([]Tetro, error) {
+	fle, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer fle.Close()
+	scanner := bufio.NewScanner(fle)
+	var (
+		i    int
+		flag bool = true
+	)
+	for scanner.Scan() {
+
+		// call each line str
+		str := scanner.Text()
+		if str == "" {
+			if flag {
+				flag = false
+				continue
+			} else {
+				fmt.Println("ERROR")
+				os.Exit(0)
+			}
+		}
+		i++
+		if i == 4 {
+			flag = true
+			i = 0
+		}
+	}
+
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
