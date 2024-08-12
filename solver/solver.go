@@ -11,6 +11,7 @@ type Board struct {
 	size  int
 }
 
+// newBoard takes size as an integer and returns a pointer to a board of size by size
 func newBoard(size int) *Board {
 	cells := make([]rune, size*size)
 	for i := range cells {
@@ -22,14 +23,7 @@ func newBoard(size int) *Board {
 	}
 }
 
-func (b *Board) get(x, y int) rune {
-	return b.cells[y*b.size+x]
-}
-
-func (b *Board) set(x, y int, value rune) {
-	b.cells[y*b.size+x] = value
-}
-
+// TetrominoesAssembler takes a slice of tetrominoes to be placed on the board and returns 2D slice of runes with all tetrominoes placed correctly
 func TetrominoesAssembler(tetrominoes []reader.Tetro) [][]rune {
 	totalCells := len(tetrominoes) * 4
 	minSize := int(math.Ceil(math.Sqrt(float64(totalCells))))
@@ -42,6 +36,7 @@ func TetrominoesAssembler(tetrominoes []reader.Tetro) [][]rune {
 	}
 }
 
+// solve takes a pointer to a board, a slice of terominoes, current tetro index and returns a true if a solution for placement is found, defaults to false
 func solve(board *Board, tetrominoes []reader.Tetro, index int) bool {
 	if index == len(tetrominoes) {
 		return true
@@ -64,6 +59,7 @@ func solve(board *Board, tetrominoes []reader.Tetro, index int) bool {
 	return false
 }
 
+// canPlace takes a pointer to board, a tetro, the coordinates to place the tetro, and returns true or false if it can be placed at the position
 func canPlace(board *Board, tetro reader.Tetro, x, y int) bool {
 	for i := 0; i < tetro.Height; i++ {
 		for j := 0; j < tetro.Width; j++ {
@@ -75,6 +71,8 @@ func canPlace(board *Board, tetro reader.Tetro, x, y int) bool {
 	return true
 }
 
+// place takes pointer to a board, a tetro, the coordinates to place the tetro, and the rune to place
+// It has no return value
 func place(board *Board, tetro reader.Tetro, x, y int, letter rune) {
 	for i := 0; i < tetro.Height; i++ {
 		for j := 0; j < tetro.Width; j++ {
@@ -85,6 +83,17 @@ func place(board *Board, tetro reader.Tetro, x, y int, letter rune) {
 	}
 }
 
+// get retrieves the rune located at the specified (x, y) coordinates on the Board.
+func (b *Board) get(x, y int) rune {
+	return b.cells[y*b.size+x] // calculates the index in the 1D slice b.cells that corresponds to the 2D coordinates (x, y)
+}
+
+// set assigns a given rune value to the specified (x, y) coordinates on the Board.
+func (b *Board) set(x, y int, value rune) {
+	b.cells[y*b.size+x] = value
+}
+
+// boardToRuneSlice takes a pointer to a board and returns a 2D slice of runes
 func boardToRuneSlice(board *Board) [][]rune {
 	result := make([][]rune, board.size)
 	for i := range result {
@@ -96,6 +105,8 @@ func boardToRuneSlice(board *Board) [][]rune {
 	return result
 }
 
+// PrintSolution takes the board and prints it
+// It has no return value
 func PrintSolution(board [][]rune) {
 	for _, row := range board {
 		println(string(row))
