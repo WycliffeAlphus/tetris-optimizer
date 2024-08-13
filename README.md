@@ -24,7 +24,7 @@ This Go program reads a list of tetrominoes from a text file and assembles them 
      ```   
 
 2. **File Format**:
-   - The text file should contain tetrominoes separated by blank lines.
+   - The text file should contain tetrominoes separated by a single blank line (More than one blank line is a wrong file format)
    - Each tetromino should be represented as a 4x4 grid of characters (`#` for filled and `.` for empty).
    - Example of a valid file format:
 
